@@ -1,1 +1,4 @@
 .idea/
+/gateway/bin/
+/gateway/tmp/
+/orders/tmp/main
