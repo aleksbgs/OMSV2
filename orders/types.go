@@ -1,9 +1,13 @@
 package main
 
-import "context"
+import (
+	"context"
+	pb "github.com/aleksbgs/commons/api"
+)
 
 type OrdersService interface {
-	CreateOrder(ctx context.Context) error
+	CreateOrder(context.Context) error
+	ValidateOrder(context.Context, *pb.CreateOrderRequest) error
 }
 type OrdersStore interface {
 	Create(ctx context.Context) error

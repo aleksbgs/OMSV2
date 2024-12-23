@@ -9,10 +9,14 @@ import (
 
 type grpcHandler struct {
 	pb.UnimplementedOrderServiceServer
+	service OrdersService
 }
 
-func NewGrpcHandler(grpcServer *grpc.Server) {
-	handler := &grpcHandler{}
+func NewGrpcHandler(grpcServer *grpc.Server, service OrdersService) {
+
+	handler := &grpcHandler{
+		service: service,
+	}
 	pb.RegisterOrderServiceServer(grpcServer, handler)
 }
 
