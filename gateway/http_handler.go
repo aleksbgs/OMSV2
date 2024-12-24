@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/akeksbgs/omsv2-gateway/gateway"
 	common "github.com/aleksbgs/commons"
 	pb "github.com/aleksbgs/commons/api"
 	"google.golang.org/grpc/codes"
@@ -10,25 +11,24 @@ import (
 )
 
 type handler struct {
-	// gateway
-	client pb.OrderServiceClient
+	gateway gateway.OrdersGateway
 }
 
-func NewHandler(client pb.OrderServiceClient) *handler {
-	return &handler{client}
+func NewHandler(gateway gateway.OrdersGateway) *handler {
+	return &handler{gateway}
 }
 
 func (h *handler) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/customers/{customerID}/orders", h.handleCreateOrder)
 }
 
-func (h *handler) handleCreateOrder(writer http.ResponseWriter, request *http.Request) {
+func (h *handler) handleCreateOrder(writer http.ResponseWriter, r *http.Request) {
 
-	customerID := request.PathValue("customerID")
+	customerID := r.PathValue("customerID")
 
 	var items []*pb.ItemsWithQuantity
 
-	if err := common.ReadJson(request, &items); err != nil {
+	if err := common.ReadJson(r, &items); err != nil {
 		common.WriteError(writer, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -38,7 +38,7 @@ func (h *handler) handleCreateOrder(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	order, err := h.client.CreateOrder(request.Context(), &pb.CreateOrderRequest{
+	o, err := h.gateway.CreateOrder(r.Context(), &pb.CreateOrderRequest{
 		CustomerID: customerID,
 		Items:      items,
 	})
@@ -55,7 +55,7 @@ func (h *handler) handleCreateOrder(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	common.WriteJson(writer, http.StatusOK, order)
+	common.WriteJson(writer, http.StatusOK, o)
 }
 func validateItems(items []*pb.ItemsWithQuantity) error {
 	if len(items) == 0 {
